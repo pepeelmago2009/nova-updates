@@ -20,6 +20,10 @@ contextBridge.exposeInMainWorld('nova', {
     remove: (mc, filename) => ipcRenderer.invoke('mods:remove', mc, filename),
   },
   installUpdate: () => ipcRenderer.invoke('update:install'),
+  hardware: () => ipcRenderer.invoke('perf:hardware'),
+  applyProfile: (mc, profile) => ipcRenderer.invoke('perf:apply', mc, profile),
+  fpsSessions: () => ipcRenderer.invoke('perf:fps'),
+  pingServer: (address) => ipcRenderer.invoke('servers:ping', address),
   window: (action) => ipcRenderer.send('window', action),
   on: (channel, fn) => {
     const ok = ['progress', 'status', 'log', 'game-closed', 'error', 'mods-status', 'update', 'update-required'];

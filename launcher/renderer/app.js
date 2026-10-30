@@ -321,19 +321,22 @@ async function init() {
     document.querySelectorAll('.nav').forEach((x) => x.classList.toggle('active', x === b));
     document.querySelectorAll('.page').forEach((p) => p.classList.toggle('active', p.id === 'page-' + b.dataset.page));
     if (b.dataset.page === 'mods') openMods();
+    if (b.dataset.page === 'perf') openPerf();
+    if (b.dataset.page === 'servers') openServers();
   }));
   $('btn-min').onclick = () => nova.window('min');
   $('btn-close').onclick = () => nova.window('close');
 
   $('version').onchange = (e) => save({ version: e.target.value });
   initMods();
+  initServers();
   $('username').onchange = (e) => {
     const v = e.target.value.trim();
     if (!/^[A-Za-z0-9_]{3,16}$/.test(v)) { toast(t('badName')); e.target.value = settings.username; return; }
     save({ username: v }).then(() => toast(t('saved')));
   };
   $('ram').oninput = (e) => { $('ram-val').textContent = e.target.value + ' GB'; };
-  $('ram').onchange = (e) => save({ ramGB: Number(e.target.value) });
+  $('ram').onchange = (e) => save({ ramGB: Number(e.target.value), ramAuto: false });
   for (const k of ['perf', 'nova', 'fullscreen', 'closeOnLaunch']) $(k).onclick = () => save({ [k]: !settings[k] });
   document.querySelectorAll('#lang button').forEach((b) => { b.onclick = () => save({ lang: b.dataset.v }); });
   document.querySelectorAll('#theme button').forEach((b, i) => { b.onclick = () => save({ theme: i }); });
@@ -366,6 +369,7 @@ async function init() {
   $('update-btn').onclick = async () => { if (!(await nova.installUpdate())) toast(t('updateLater')); };
   document.querySelector('.profile').onclick = () => { const b = document.querySelector('.nav[data-page="settings"]'); if (b) b.click(); };
   nova.on('game-closed', ({ code, nova: usedNova }) => {
+    if ($('page-perf').classList.contains('active')) openPerf(); // llegaron FPS nuevos de la partida
     if (!code) showStatus({ key: 'closed', text: t('closed') });
     else if (usedNova) showStatus({ key: 'novaCrashed', text: t('novaCrashed', [code]) });
     else showStatus({ key: 'crashed', text: t('crashed', [code]) });
@@ -381,11 +385,160 @@ async function init() {
     await nova.play(settings.version, opts);
     setBusy(false);
   };
+  window.novaStart = start; // la pagina Servidores entra directo a un servidor
   $('play').onclick = () => start({});
   $('play-safe').onclick = () => start({ skipNova: true });
 
   render();
   setBusy(state.running);
+}
+
+// ---------------------------------------------------------------- servidores (ping real y entrar directo)
+const srvState = {};
+
+function openServers(force) {
+  renderServers();
+  for (const s of settings.servers) if (force || !srvState[s.address]) pingOne(s.address);
+}
+
+async function pingOne(address) {
+  srvState[address] = { wait: true };
+  renderServers();
+  srvState[address] = await nova.pingServer(address);
+  renderServers();
+}
+
+function renderServers() {
+  const list = settings.servers, st = list.map((s) => srvState[s.address] || {});
+  const measured = st.filter((x) => !x.wait && x.ok !== undefined).length, up = st.filter((x) => x.ok).length;
+  const players = st.reduce((a, x) => a + (x.ok ? x.online : 0), 0);
+  $('srv-tiles').innerHTML = [[t('srvMeasured'), measured], [t('srvOnline'), up], [t('srvPlayers'), players.toLocaleString()]]
+    .map(([k, v]) => `<div class="fps-tile"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
+  $('srv-grid').innerHTML = list.map((s, i) => {
+    const x = st[i];
+    const icon = x.ok && x.favicon ? `<img class="srv-icon" src="${x.favicon}">` : `<div class="srv-icon">${esc(s.name[0] || '?')}</div>`;
+    const pill = x.wait || x.ok === undefined ? `<span class="pill wait">${t('srvMeasuring')}</span>`
+      : x.ok ? `<span class="pill on">${t('srvUp')}</span>` : `<span class="pill off">${t('srvDown')}</span>`;
+    const ping = x.ok ? `<span class="ping ${x.ping < 90 ? 'good' : x.ping < 180 ? 'mid' : 'bad'}">${x.ping} ms</span>` : '';
+    const who = x.ok ? `<span>${x.online.toLocaleString()} / ${x.max.toLocaleString()}</span>` : '';
+    return `<div class="srv" style="animation-delay:${i * 0.04}s"><button class="srv-x" data-del="${i}" title="${t('srvRemove')}">&#10005;</button>
+      <div class="srv-top">${icon}<div style="min-width:0"><div class="srv-name">${esc(s.name)}</div><div class="srv-addr">${esc(s.address)}</div></div></div>
+      <div class="srv-motd">${x.ok ? esc(x.motd || x.version) : x.wait ? '' : esc(x.error ? t('srvNoAnswer') : '')}</div>
+      <div class="srv-meta">${pill}${who}${ping}${x.ok && x.version ? `<span class="dim small">${esc(x.version.slice(0, 24))}</span>` : ''}</div>
+      <div class="srv-foot"><button class="mod-btn" data-join="${i}">${t('srvJoin')}</button></div></div>`;
+  }).join('');
+  $('srv-grid').querySelectorAll('[data-join]').forEach((b) => b.onclick = () => {
+    const s = list[Number(b.dataset.join)];
+    document.querySelector('.nav[data-page="play"]').click();
+    toast(t('srvJoining', [s.name, settings.version]));
+    window.novaStart({ server: s.address });
+  });
+  $('srv-grid').querySelectorAll('[data-del]').forEach((b) => b.onclick = async () => {
+    await save({ servers: list.filter((_, j) => j !== Number(b.dataset.del)) });
+    renderServers();
+  });
+}
+
+function initServers() {
+  $('srv-refresh').onclick = () => openServers(true);
+  $('srv-add-btn').onclick = async () => {
+    const address = $('srv-addr').value.trim(), name = $('srv-name').value.trim() || address.split(':')[0];
+    if (!/^[^:\s]+(:\d{1,5})?$/.test(address)) { toast(t('srvBadAddr')); return; }
+    await save({ servers: [...settings.servers, { name, address }] });
+    $('srv-addr').value = ''; $('srv-name').value = '';
+    pingOne(address);
+  };
+}
+
+// ---------------------------------------------------------------- rendimiento (FPS que manda Nova, equipo y perfiles)
+const PROFILES = ['auto', 'performance', 'balanced', 'quality'];
+let hwInfo = null;
+
+async function openPerf() {
+  renderPerfProfiles();
+  renderRamPresets();
+  if (!hwInfo) {
+    hwInfo = await nova.hardware();
+    const kind = { dedicated: t('gpuDedicated'), integrated: t('gpuIntegrated'), unknown: '' }[hwInfo.gpuKind] || '';
+    $('hw').innerHTML = [
+      [t('hwGpu'), esc(hwInfo.gpu || t('hwUnknown')) + (kind ? ` <span class="dim small">(${kind})</span>` : '')],
+      [t('hwRam'), hwInfo.ramGB + ' GB'], [t('hwThreads'), String(hwInfo.threads)],
+      [t('hwRecommended'), `${t('prof_' + hwInfo.profile)} · ${hwInfo.ram} GB RAM`],
+    ].map(([k, v]) => `<div class="hw-row"><span>${k}</span><b>${v}</b></div>`).join('');
+    renderPerfProfiles();
+  }
+  renderFps(await nova.fpsSessions());
+}
+
+function renderPerfProfiles() {
+  $('prof-for').textContent = t('profFor', [settings.version]);
+  const rec = hwInfo ? hwInfo.profile : null;
+  $('prof-list').innerHTML = PROFILES.map((p) => `<div class="prof${p === 'auto' ? ' rec' : ''}"><div>
+      <b>${t('prof_' + p)}${p === 'auto' ? ` <span class="badge">${t('recommended')}</span>` : ''}</b>
+      <div class="dim">${p === 'auto' && rec ? t('profAutoIs', [t('prof_' + rec)]) : t('profd_' + p)}</div></div>
+      <button class="ghost" data-prof="${p}">${t('apply')}</button></div>`).join('');
+  $('prof-list').querySelectorAll('button').forEach((b) => b.onclick = async () => {
+    const r = await nova.applyProfile(settings.version, b.dataset.prof);
+    toast(r.ok ? t('profApplied', [t('prof_' + r.profile), settings.version]) : t('error', ['?']));
+  });
+}
+
+function renderRamPresets() {
+  const opts = ['auto', 2, 3, 4, 6, 8].filter((v) => v === 'auto' || v <= state.maxRam);
+  $('ram-presets').innerHTML = opts.map((v) => {
+    const on = v === 'auto' ? settings.ramAuto : !settings.ramAuto && settings.ramGB === v;
+    return `<button data-v="${v}" class="${on ? 'on' : ''}">${v === 'auto' ? t('ramAuto', [settings.ramAuto ? settings.ramGB : '']) : v + ' GB'}</button>`;
+  }).join('');
+  $('ram-presets').querySelectorAll('button').forEach((b) => b.onclick = async () => {
+    await save(b.dataset.v === 'auto' ? { ramAuto: true } : { ramGB: Number(b.dataset.v), ramAuto: false });
+    renderRamPresets();
+  });
+}
+
+function renderFps(list) {
+  if (!list.length) {
+    $('fps-tiles').innerHTML = ''; $('fps-list').innerHTML = `<div class="mods-empty">${t('fpsNone')}</div>`;
+    drawFpsChart([]); return;
+  }
+  const last = list[0], prev = list.find((s, i) => i > 0 && s.mc === last.mc);
+  const diff = prev ? Math.round((last.avg - prev.avg) / Math.max(1, prev.avg) * 100) : null;
+  const tile = (k, v, unit, d) => `<div class="fps-tile"><div class="k">${k}</div><div class="v">${v}<small>${unit}</small></div>${d || ''}</div>`;
+  $('fps-tiles').innerHTML = tile(t('fpsAvg'), Math.round(last.avg), 'FPS',
+      diff === null ? '' : `<div class="d ${diff >= 0 ? 'up' : 'down'}">${diff >= 0 ? '▲' : '▼'} ${Math.abs(diff)} % ${t('fpsVsPrev')}</div>`)
+    + tile(t('fpsLow'), Math.round(last.low), 'FPS', `<div class="dim small">${t('fpsLowHint')}</div>`)
+    + tile(t('fpsMax'), last.max, 'FPS') + tile(t('fpsSessions'), list.length, '');
+  const fmt = (ms) => new Date(ms).toLocaleString(settings.lang, { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  $('fps-list').innerHTML = `<div class="fps-row head"><span>${t('fpsWhen')}</span><span>${t('version')}</span><span>${t('fpsMode')}</span><span>${t('fpsAvg')}</span><span>${t('fpsLow')}</span><span>${t('fpsTime')}</span></div>`
+    + list.slice(0, 30).map((s) => `<div class="fps-row"><span>${fmt(s.time)}</span><span>${esc(s.mc)}</span>
+      <span class="mode-tag m${s.mode | 0}">${t('mode' + (s.mode | 0))}</span><b>${Math.round(s.avg)}</b><span>${Math.round(s.low)}</span>
+      <span class="dim">${Math.round(s.seconds / 60)} min</span></div>`).join('');
+  drawFpsChart(list.slice(0, 20).reverse());
+}
+
+/** Barras con el promedio de cada partida y una linea con el 1 % mas bajo (crecen con una animacion). */
+function drawFpsChart(data) {
+  const c = $('fps-chart'), dpr = window.devicePixelRatio || 1, w = c.clientWidth, h = c.clientHeight;
+  c.width = w * dpr; c.height = h * dpr;
+  const g = c.getContext('2d'); g.scale(dpr, dpr);
+  if (!data.length) { g.clearRect(0, 0, w, h); return; }
+  const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+  const max = Math.max(30, ...data.map((s) => s.max || s.avg)) * 1.1, bw = w / data.length, start = performance.now();
+  const frame = (now) => {
+    const k = Math.min(1, (now - start) / 600), e = 1 - Math.pow(1 - k, 3);
+    g.clearRect(0, 0, w, h);
+    g.strokeStyle = 'rgba(255,255,255,.06)'; g.lineWidth = 1;
+    for (let i = 1; i <= 3; i++) { const y = h - (h * i) / 4; g.beginPath(); g.moveTo(0, y); g.lineTo(w, y); g.stroke(); }
+    data.forEach((s, i) => {
+      const bh = (s.avg / max) * (h - 16) * e, x = i * bw + bw * 0.18;
+      const gr = g.createLinearGradient(0, h - bh, 0, h); gr.addColorStop(0, accent); gr.addColorStop(1, 'rgba(255,255,255,.04)');
+      g.fillStyle = gr; g.beginPath(); g.roundRect(x, h - bh, bw * 0.64, bh, 5); g.fill();
+    });
+    g.strokeStyle = '#fbbf24'; g.lineWidth = 2; g.beginPath();
+    data.forEach((s, i) => { const x = i * bw + bw / 2, y = h - (s.low / max) * (h - 16) * e; i ? g.lineTo(x, y) : g.moveTo(x, y); });
+    g.stroke();
+    if (k < 1) requestAnimationFrame(frame);
+  };
+  requestAnimationFrame(frame);
 }
 
 init();

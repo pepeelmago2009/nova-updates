@@ -9,6 +9,8 @@ const game = require('./src/game');
 const catalog = require('./src/catalog');
 const accounts = require('./src/accounts');
 const updater = require('./src/updater');
+const hardware = require('./src/hardware');
+const servers = require('./src/servers');
 
 const ROOT = path.join(app.getPath('appData'), '.novaclient'); // Minecraft, Java y mods del lanzador
 const SETTINGS = path.join(ROOT, 'launcher-settings.json');
@@ -103,7 +105,7 @@ ipcMain.handle('game:play', async (_e, mc, opts = {}) => {
   try {
     emit('status', { key: 'login' });
     settings.auth = await accounts.authFor(store(), settings.username, (name) => require('minecraft-launcher-core').Authenticator.getAuth(name));
-    const launched = game.play({ root: ROOT, resourcesDir: RESOURCES, settings, mc, skipNova: !!opts.skipNova }, (ch, data) => {
+    const launched = game.play({ root: ROOT, resourcesDir: RESOURCES, settings, mc, skipNova: !!opts.skipNova, server: opts.server && servers.parseAddress(opts.server) ? String(opts.server).trim() : null }, (ch, data) => {
       emit(ch, data);
       if (ch === 'status' && data.key === 'running' && settings.closeOnLaunch && win) win.hide();
     });
@@ -121,6 +123,23 @@ ipcMain.handle('game:play', async (_e, mc, opts = {}) => {
 });
 
 ipcMain.handle('update:install', () => updates.install());
+
+// ---- rendimiento: equipo, perfil de graficos y FPS que manda Nova desde el juego
+ipcMain.handle('perf:hardware', () => {
+  const hw = hardware.detect();
+  return { ...hw, profile: hardware.profileFor(hw), ram: hardware.recommendedRam(hw.ramGB) };
+});
+ipcMain.handle('perf:apply', (_e, mc, profile) => {
+  if (!SUPPORTED.includes(mc)) return { ok: false };
+  const p = profile === 'auto' ? hardware.profileFor(hardware.detect()) : profile;
+  return { ok: !!hardware.applyVideo(path.join(ROOT, 'instances', mc), p, true), profile: p };
+});
+ipcMain.handle('perf:fps', () => hardware.fpsSessions(ROOT));
+
+// ---- servidores: ping real (jugadores, version, latencia)
+ipcMain.handle('servers:ping', async (_e, address) => {
+  try { return { ok: true, ...(await servers.ping(address)) }; } catch (e) { return { ok: false, error: String(e && e.message || e) }; }
+});
 
 // ---- cuentas de Minecraft
 ipcMain.handle('accounts:list', () => store().list());

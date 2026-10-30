@@ -19,6 +19,8 @@
     <nav>
       <button class="nav active" data-page="play"><i>&#9654;</i><span data-t="play">Jugar</span></button>
       <button class="nav" data-page="mods"><i>&#9638;</i><span data-t="mods">Mods</span></button>
+      <button class="nav" data-page="servers"><i>&#9673;</i><span data-t="serversPage">Servidores</span></button>
+      <button class="nav" data-page="perf"><i>&#9889;</i><span data-t="perfPage">Rendimiento</span></button>
       <button class="nav" data-page="settings"><i>&#9881;</i><span data-t="settings">Ajustes</span></button>
       <button class="nav" data-page="log"><i>&#8801;</i><span data-t="log">Registro</span></button>
     </nav>
@@ -83,6 +85,53 @@
         <button id="mods-more" class="ghost hidden" data-t="loadMore">Cargar más</button>
       </div>
       <div id="mods-installed" class="hidden"></div>
+    </section>
+
+    <!-- SERVIDORES -->
+    <section class="page" id="page-servers">
+      <div class="mods-head">
+        <h2 data-t="serversPage">Servidores</h2>
+        <button class="ghost" id="srv-refresh" data-t="srvRefresh">Volver a medir</button>
+      </div>
+      <div class="fps-tiles srv-tiles" id="srv-tiles"></div>
+      <div class="card glass srv-add">
+        <h3 data-t="srvAdd">Añadir por IP</h3>
+        <div class="srv-form">
+          <input id="srv-name" maxlength="32" spellcheck="false" data-tp="srvName" placeholder="Nombre (ej: Mi SMP)">
+          <input id="srv-addr" maxlength="80" spellcheck="false" data-tp="srvAddr" placeholder="Dirección (ej: mc.ejemplo.net:25565)">
+          <button class="mod-btn" id="srv-add-btn" data-t="srvAddBtn">Añadir</button>
+        </div>
+      </div>
+      <div class="srv-grid" id="srv-grid"></div>
+      <div class="dim small srv-hint" data-t="srvHint">El estado se mide en el momento con el mismo protocolo de la lista de multijugador de Minecraft.</div>
+    </section>
+
+    <!-- RENDIMIENTO -->
+    <section class="page" id="page-perf">
+      <h2 data-t="perfPage">Rendimiento</h2>
+      <div class="grid">
+        <div class="card glass wide">
+          <h3 data-t="fpsTitle">Tus FPS</h3>
+          <div class="fps-tiles" id="fps-tiles"></div>
+          <canvas id="fps-chart" class="fps-chart" height="130"></canvas>
+          <div class="fps-list" id="fps-list"></div>
+          <div class="dim small" data-t="fpsHint">Nova anota los FPS de cada partida y los manda aquí cuando sales del mundo.</div>
+        </div>
+        <div class="card glass">
+          <h3 data-t="hwTitle">Tu equipo</h3>
+          <div class="hw" id="hw"><div class="dim small" data-t="hwReading">Leyendo el equipo...</div></div>
+        </div>
+        <div class="card glass">
+          <h3 data-t="profTitle">Perfil de gráficos</h3>
+          <div class="dim small" id="prof-for"></div>
+          <div class="prof-list" id="prof-list"></div>
+        </div>
+        <div class="card glass">
+          <h3 data-t="ramTitle">Memoria para Minecraft</h3>
+          <div class="seg" id="ram-presets"></div>
+          <div class="dim small" data-t="ramHint">Más RAM no da más FPS: solo se la quita a Windows. Lo recomendado alcanza.</div>
+        </div>
+      </div>
     </section>
 
     <!-- AJUSTES -->

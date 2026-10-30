@@ -34,12 +34,13 @@ const game = require('../src/game');
 
 async function run() {
   // ---- ajustes
-  const c = settings.clean({ username: 'a b', ramGB: 99, lang: 'xx', version: '1.8.9', theme: 9 }, 8);
+  const c = settings.clean({ username: 'a b', ramGB: 99, ramAuto: false, lang: 'xx', version: '1.8.9', theme: 9 }, 8);
   assert.strictEqual(c.username, 'Player');
   assert.strictEqual(c.ramGB, 8);
   assert.strictEqual(c.lang, 'es');
   assert.strictEqual(c.version, '1.21.4');
   assert.strictEqual(c.theme, 5);
+  assert.ok(settings.clean({ ramGB: 12 }, 32).ramGB <= 6, 'sin tocar la RAM, la elige el lanzador');
   const f = path.join(tmp, 's.json');
   settings.save(f, { username: 'Steve_99', ramGB: 6 }, 16);
   assert.strictEqual(settings.load(f, 16).username, 'Steve_99');
@@ -211,6 +212,43 @@ async function run() {
   assert.ok(mcMatches('>=1.21 <1.21.2', '1.21.1') && !mcMatches('>=1.21 <1.21.2', '1.21.2'));
   assert.ok(!mcMatches('1.21.1', '1.21') && mcMatches(['1.21', '1.21.1'], '1.21'));
   assert.ok(mcMatches('1.21.x', '1.21.5') && mcMatches(undefined, '1.21'));
+  // ---- rendimiento segun el equipo
+  const hw = require('../src/hardware');
+  assert.strictEqual(hw.gpuKind(['NVIDIA GeForce MX100']), 'dedicated');
+  assert.strictEqual(hw.gpuKind(['Intel(R) UHD Graphics 620']), 'integrated');
+  assert.strictEqual(hw.gpuKind(['Intel(R) UHD Graphics 620', 'NVIDIA GeForce MX100']), 'dedicated');
+  assert.deepStrictEqual([4, 8, 16, 32].map(hw.recommendedRam), [2, 3, 4, 6]);
+  assert.strictEqual(hw.profileFor({ ramGB: 8, threads: 4, gpuKind: 'dedicated' }), 'performance');
+  assert.strictEqual(hw.profileFor({ ramGB: 32, threads: 16, gpuKind: 'dedicated' }), 'quality');
+  assert.ok(hw.jvmArgs(3).includes('-XX:G1HeapRegionSize=8M') && !hw.jvmArgs(3).includes('-XX:+AlwaysPreTouch'));
+  const vinst = path.join(tmp, 'video'); fs.mkdirSync(vinst);
+  fs.writeFileSync(path.join(vinst, 'options.txt'), 'renderDistance:32\nlang:es_es\n');
+  assert.strictEqual(hw.applyVideo(vinst, 'performance'), 'performance');
+  const opts = fs.readFileSync(path.join(vinst, 'options.txt'), 'utf8');
+  assert.ok(opts.includes('renderDistance:8') && !opts.includes('renderDistance:32') && opts.includes('lang:es_es'));
+  assert.strictEqual(hw.applyVideo(vinst, 'quality'), null, 'solo la primera vez');
+  // ---- servidores: ping con el protocolo de Minecraft contra un servidor falso local
+  const servers = require('../src/servers');
+  const netm = require('net');
+  const fake = netm.createServer((sock) => {
+    let got = Buffer.alloc(0);
+    sock.on('data', (d) => {
+      got = Buffer.concat([got, d]);
+      const [l1, p1] = servers.readVarint(got, 0);
+      if (got.length < p1 + l1 + 2) return; // saludo + pedido de estado
+      const json = Buffer.from(JSON.stringify({ version: { name: '1.21.4' }, players: { online: 42, max: 100 }, description: { text: '§aHola ', extra: [{ text: 'Nova' }] } }));
+      const body = Buffer.concat([servers.varint(0), servers.varint(json.length), json]);
+      sock.write(Buffer.concat([servers.varint(body.length), body]));
+    });
+  });
+  await new Promise((r) => fake.listen(0, '127.0.0.1', r));
+  const st = await servers.ping('127.0.0.1:' + fake.address().port);
+  fake.close();
+  assert.strictEqual(st.online, 42); assert.strictEqual(st.max, 100);
+  assert.strictEqual(st.version, '1.21.4'); assert.strictEqual(st.motd, 'Hola Nova');
+  assert.deepStrictEqual(servers.parseAddress('Play.Example.net:25570'), { host: 'play.example.net', port: 25570, explicitPort: true });
+  assert.strictEqual(servers.parseAddress('mal ip'), null);
+  assert.strictEqual(servers.clean([{ address: 'a.com' }, { address: 'A.com' }, { address: '' }]).length, 1);
   console.log('OK: todas las pruebas del lanzador pasaron');
 }
 
