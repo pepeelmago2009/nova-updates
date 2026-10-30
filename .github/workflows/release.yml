@@ -1,0 +1,25 @@
+# Arma NovaClient-Setup.exe en Windows y lo publica en Releases cuando se sube una etiqueta vX.Y.Z.
+# Los lanzadores ya instalados leen latest.yml de la ultima Release y se actualizan solos.
+name: Publicar version
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: launcher
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install --no-audit --no-fund
+      - run: npm test
+      - run: npx electron-builder --win nsis --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

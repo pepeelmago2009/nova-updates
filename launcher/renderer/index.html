@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://cdn.modrinth.com https://textures.minecraft.net">
+  <title>Nova Client</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="bg"></canvas>
+  <div class="titlebar">
+    <div class="drag"></div>
+    <button class="tb" id="btn-min" aria-label="Minimizar">&#8211;</button>
+    <button class="tb close" id="btn-close" aria-label="Cerrar">&#10005;</button>
+  </div>
+
+  <aside class="sidebar glass">
+    <div class="brand"><svg class="logo" viewBox="-30 -30 60 60"><g id="star"></g></svg><span>NOVA CLIENT</span></div>
+    <nav>
+      <button class="nav active" data-page="play"><i>&#9654;</i><span data-t="play">Jugar</span></button>
+      <button class="nav" data-page="mods"><i>&#9638;</i><span data-t="mods">Mods</span></button>
+      <button class="nav" data-page="settings"><i>&#9881;</i><span data-t="settings">Ajustes</span></button>
+      <button class="nav" data-page="log"><i>&#8801;</i><span data-t="log">Registro</span></button>
+    </nav>
+    <div class="update hidden" id="update">
+      <div class="update-text"><b id="update-title"></b><span class="dim small" id="update-sub"></span></div>
+      <div class="update-bar"><i id="update-fill"></i></div>
+      <button class="update-btn hidden" id="update-btn" data-t="updateNow">Reiniciar y actualizar</button>
+    </div>
+    <div class="profile">
+      <div class="avatar" id="avatar">P</div>
+      <div><div id="profile-name">Player</div><div class="dim small" id="profile-type">Cuenta sin premium</div></div>
+    </div>
+  </aside>
+
+  <main>
+    <!-- JUGAR -->
+    <section class="page active" id="page-play">
+      <div class="hero">
+        <h1>NOVA <span class="accent">CLIENT</span></h1>
+        <p class="dim" data-t="tagline">Menu de modulos, cielos animados, cosmeticos y FPS Boost.</p>
+      </div>
+      <div class="features">
+        <div class="chip" data-t="f1">Sin particulas ni nubes</div>
+        <div class="chip" data-t="f2">5 cielos + video</div>
+        <div class="chip" data-t="f3">Alas, halo, capa, corona</div>
+        <div class="chip" data-t="f4">HUD y Keystrokes</div>
+      </div>
+      <div class="playbar glass">
+        <div class="field">
+          <label data-t="version">Version</label>
+          <select id="version"></select>
+        </div>
+        <div class="status-wrap">
+          <div id="status" class="status" data-t="ready">Listo para jugar</div>
+          <div class="bar"><div id="bar-fill"></div></div>
+          <div id="warn" class="warn hidden"></div>
+          <button id="play-safe" class="ghost small hidden" data-t="playSafe">Jugar sin Nova</button>
+        </div>
+        <button id="play" class="play"><span data-t="playBtn">JUGAR</span></button>
+      </div>
+    </section>
+
+    <!-- MODS -->
+    <section class="page" id="page-mods">
+      <div class="mods-head">
+        <h2><span data-t="modsFor">Mods para</span> <span id="mods-version" class="accent">1.21.4</span></h2>
+        <div class="seg" id="mods-tabs">
+          <button data-v="browse" class="on" data-t="browse">Explorar</button>
+          <button data-v="installed" data-t="installed">Instalados</button>
+        </div>
+      </div>
+      <div id="mods-browse">
+        <div class="mods-search">
+          <input id="mods-query" spellcheck="false" data-tp="searchMods" placeholder="Buscar mods (ej: minimapa, shaders, zoom)">
+          <select id="mods-sort">
+            <option value="relevance" data-t="sortRelevance">Relevancia</option>
+            <option value="downloads" data-t="sortDownloads">Más descargados</option>
+            <option value="updated" data-t="sortUpdated">Recientes</option>
+          </select>
+        </div>
+        <div id="mods-results" class="mods-grid"></div>
+        <button id="mods-more" class="ghost hidden" data-t="loadMore">Cargar más</button>
+      </div>
+      <div id="mods-installed" class="hidden"></div>
+    </section>
+
+    <!-- AJUSTES -->
+    <section class="page" id="page-settings">
+      <h2 data-t="settings">Ajustes</h2>
+      <div class="grid">
+        <div class="card glass">
+          <h3 data-t="account">Cuenta</h3>
+          <div class="acc-list" id="acc-list"></div>
+          <button class="ms-btn" id="acc-add"><span class="ms-logo"><i></i><i></i><i></i><i></i></span><span data-t="addMicrosoft">Iniciar sesión con Microsoft</span></button>
+          <div class="dim small" data-t="accHint"></div>
+          <label data-t="offlineName">Nombre sin premium</label>
+          <input id="username" maxlength="16" spellcheck="false">
+          <div class="dim small" data-t="usernameHint">3-16 letras, numeros o _. Sirve para servidores sin premium.</div>
+        </div>
+        <div class="card glass">
+          <h3 data-t="performance">Rendimiento</h3>
+          <label><span data-t="ram">Memoria RAM</span>: <b id="ram-val">4 GB</b></label>
+          <input type="range" id="ram" min="1" max="16" step="1">
+          <div class="row"><span data-t="perfMods">Mods de rendimiento (Lithium, FerriteCore)</span><button class="switch" id="perf"></button></div>
+        </div>
+        <div class="card glass">
+          <h3 data-t="client">Cliente</h3>
+          <div class="row"><span data-t="novaToggle">Activar Nova Client</span><button class="switch" id="nova"></button></div>
+          <div class="row"><span data-t="fullscreen">Pantalla completa</span><button class="switch" id="fullscreen"></button></div>
+          <div class="row"><span data-t="closeOnLaunch">Ocultar el lanzador al jugar</span><button class="switch" id="closeOnLaunch"></button></div>
+          <div class="dim small" id="nova-avail"></div>
+        </div>
+        <div class="card glass">
+          <h3 data-t="look">Apariencia</h3>
+          <label data-t="language">Idioma</label>
+          <div class="seg" id="lang">
+            <button data-v="en">English</button><button data-v="es">Español</button><button data-v="pt">Português</button>
+          </div>
+          <label data-t="theme">Tema de color</label>
+          <div class="dots" id="theme"></div>
+        </div>
+        <div class="card glass wide">
+          <h3 data-t="folders">Carpetas y reparacion</h3>
+          <div class="buttons">
+            <button class="ghost" data-folder="root" data-t="openRoot">Abrir carpeta del juego</button>
+            <button class="ghost" data-folder="mods" data-t="openMods">Abrir carpeta de mods</button>
+            <button class="ghost" data-folder="videos" data-t="openVideos">Carpeta de videos de Nova</button>
+            <button class="ghost danger" id="repair" data-t="repair">Reparar esta version</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- REGISTRO -->
+    <section class="page" id="page-log">
+      <h2 data-t="log">Registro</h2>
+      <pre id="log" class="glass"></pre>
+    </section>
+  </main>
+
+  <script src="i18n.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
