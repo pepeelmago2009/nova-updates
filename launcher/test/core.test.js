@@ -205,6 +205,12 @@ async function run() {
   assert.deepStrictEqual(perfconfig.tune(pinst), [], 'la segunda vez no toca nada');
   assert.strictEqual(JSON.parse(fs.readFileSync(path.join(pinst, 'config', 'sodium-options.json'), 'utf8')).quality.leaves_quality, 'FANCY');
 
+  // ---- version de Minecraft que pide cada mod
+  const { mcMatches } = require('../src/mods');
+  assert.ok(mcMatches('~1.21.4', '1.21.4') && !mcMatches('~1.21.4', '1.21.3'));
+  assert.ok(mcMatches('>=1.21 <1.21.2', '1.21.1') && !mcMatches('>=1.21 <1.21.2', '1.21.2'));
+  assert.ok(!mcMatches('1.21.1', '1.21') && mcMatches(['1.21', '1.21.1'], '1.21'));
+  assert.ok(mcMatches('1.21.x', '1.21.5') && mcMatches(undefined, '1.21'));
   console.log('OK: todas las pruebas del lanzador pasaron');
 }
 

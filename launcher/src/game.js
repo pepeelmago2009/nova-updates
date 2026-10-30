@@ -1,16 +1,22 @@
 const fs = require('fs');
 const path = require('path');
-const { ensureJava } = require('./java');
+const { ensureJava, javaFor } = require('./java');
 const { ensureFabric, installedProfiles } = require('./fabric');
 const { syncMods, MANAGED } = require('./mods');
 const { ensureMinecraft } = require('./minecraft');
 const { preferDedicatedGpu, raisePriority } = require('./boost');
 const perfconfig = require('./perfconfig');
 
-/** Recolector de basura G1 ajustado para juegos: pausas cortas = menos tirones. */
+/**
+ * Recolector de basura G1 ajustado para juegos (opciones de Aikar): pausas cortas y parejas = FPS estables,
+ * sin tirones al entrar o salir de un mundo. La memoria se reserva toda al abrir (Xms = Xmx): agrandarla despues da tirones.
+ */
 const JVM_ARGS = [
-  '-XX:+UnlockExperimentalVMOptions', '-XX:+UseG1GC', '-XX:G1NewSizePercent=20', '-XX:G1ReservePercent=20',
-  '-XX:MaxGCPauseMillis=50', '-XX:G1HeapRegionSize=32M', '-XX:+DisableExplicitGC', '-XX:+ParallelRefProcEnabled',
+  '-XX:+UnlockExperimentalVMOptions', '-XX:+UseG1GC', '-XX:+ParallelRefProcEnabled', '-XX:MaxGCPauseMillis=40',
+  '-XX:+DisableExplicitGC', '-XX:+AlwaysPreTouch', '-XX:G1NewSizePercent=30', '-XX:G1MaxNewSizePercent=40',
+  '-XX:G1HeapRegionSize=8M', '-XX:G1ReservePercent=20', '-XX:G1HeapWastePercent=5', '-XX:G1MixedGCCountTarget=4',
+  '-XX:InitiatingHeapOccupancyPercent=15', '-XX:G1MixedGCLiveThresholdPercent=90', '-XX:G1RSetUpdatingPauseTimePercent=5',
+  '-XX:SurvivorRatio=32', '-XX:+PerfDisableSharedMem', '-XX:MaxTenuringThreshold=1', '-XX:+UseStringDeduplication',
 ];
 
 /** En Windows, que java.exe no abra una ventana de consola negra (MCLC no pasa windowsHide). */
@@ -37,7 +43,7 @@ async function play({ root, resourcesDir, settings, mc, skipNova = false }, emit
   fs.mkdirSync(instanceDir, { recursive: true });
 
   emit('status', { key: 'java' });
-  const javaPath = await ensureJava(root, (d, t) => emit('progress', { value: t ? d / t : -1 }));
+  const javaPath = await ensureJava(root, (d, t) => emit('progress', { value: t ? d / t : -1 }), javaFor(mc));
 
   emit('status', { key: 'fabric' });
   emit('progress', { value: -1 });
@@ -46,6 +52,7 @@ async function play({ root, resourcesDir, settings, mc, skipNova = false }, emit
   const modOpts = { ...settings, nova: settings.nova && !skipNova };
   const mods = await syncMods(instanceDir, mc, modOpts, resourcesDir, (slug) => emit('status', { key: 'mod', args: [slug] }));
   if (modOpts.nova && !mods.nova) emit('status', { key: 'noNova', args: [mc], sticky: true });
+  installPacks(instanceDir, resourcesDir);
   if (settings.perf) { const tuned = perfconfig.tune(instanceDir); if (tuned.length) emit('log', `[Nova] Mods de FPS ajustados: ${tuned.join(', ')}`); }
 
   emit('status', { key: 'minecraft' });
@@ -73,7 +80,7 @@ async function play({ root, resourcesDir, settings, mc, skipNova = false }, emit
       root,
       javaPath,
       version: { number: mc, type: 'release', custom: fabricId },
-      memory: { max: `${settings.ramGB}G`, min: `${Math.max(1, Math.floor(settings.ramGB / 2))}G` },
+      memory: { max: `${settings.ramGB}G`, min: `${settings.ramGB}G` }, // toda de una vez: sin tirones al crecer
       customArgs: JVM_ARGS,
       authorization: settings.auth || Authenticator.getAuth(settings.username),
       window: settings.fullscreen ? { fullscreen: true } : { width: 1280, height: 720 },
@@ -83,6 +90,18 @@ async function play({ root, resourcesDir, settings, mc, skipNova = false }, emit
       else { emit('status', { key: 'starting' }); emit('progress', { value: 1 }); raisePriority(proc.pid); }
     }).catch(reject);
   });
+}
+
+/** Copia el paquete de texturas "Nova FPS" a resourcepacks/ (Nova lo prende solo en ahorro Extra). */
+function installPacks(instanceDir, resourcesDir) {
+  const src = path.join(resourcesDir, '..', 'packs');
+  if (!fs.existsSync(src)) return;
+  const dst = path.join(instanceDir, 'resourcepacks');
+  fs.mkdirSync(dst, { recursive: true });
+  for (const f of fs.readdirSync(src).filter((n) => n.endsWith('.zip'))) {
+    const a = path.join(src, f), b = path.join(dst, f);
+    try { if (!fs.existsSync(b) || fs.statSync(b).size !== fs.statSync(a).size) fs.copyFileSync(a, b); } catch { /* el juego abre igual */ }
+  }
 }
 
 /** Borra lo descargado de esta version para que se vuelva a bajar limpio (no toca mundos ni ajustes). */

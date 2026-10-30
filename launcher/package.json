@@ -1,7 +1,7 @@
 {
   "name": "nova-launcher",
   "productName": "Nova Client",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Lanzador de Nova Client para Minecraft 1.21.1 - 1.21.11",
   "main": "main.js",
   "author": "Nova",
@@ -43,6 +43,13 @@
         "to": "mods",
         "filter": [
           "*.jar"
+        ]
+      },
+      {
+        "from": "resources/packs",
+        "to": "packs",
+        "filter": [
+          "*.zip"
         ]
       }
     ],

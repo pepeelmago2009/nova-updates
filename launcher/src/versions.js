@@ -1,5 +1,5 @@
 // Versiones que ofrece el lanzador y en cuales existe ya el mod Nova.
-const SUPPORTED = ['1.21.11', '1.21.10', '1.21.9', '1.21.8', '1.21.7', '1.21.6', '1.21.5', '1.21.4', '1.21.3', '1.21.2', '1.21.1'];
+const SUPPORTED = ['1.21.11', '1.21.10', '1.21.9', '1.21.8', '1.21.7', '1.21.6', '1.21.5', '1.21.4', '1.21.3', '1.21.2', '1.21.1', '1.21'];
 const DEFAULT_VERSION = '1.21.4';
 
 // Mods extra (Modrinth) que se instalan solos. Sus dependencias obligatorias se instalan tambien.
