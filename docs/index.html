@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nova Client — Cliente de Minecraft</title>
+<meta name="description" content="Nova Client: cliente de Minecraft con módulos, cosméticos, cielos animados, FPS Boost y lanzador propio. De la 1.21 a la 1.21.11.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{ --accent:#8b5cf6; --accent-light:#c4b5fd; --bg:#07070c; --glass:rgba(18,16,28,.72); --line:rgba(255,255,255,.08); --txt:#f3f2fa; --dim:#9a98ae; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html{ scroll-behavior:smooth; }
+  body{ background:var(--bg); color:var(--txt); font:16px/1.6 "Outfit",system-ui,sans-serif; overflow-x:hidden; }
+  a{ color:inherit; text-decoration:none; }
+  #stars{ position:fixed; inset:0; z-index:-2; }
+  .glow{ position:fixed; z-index:-1; border-radius:50%; filter:blur(90px); opacity:.5; }
+  .g1{ width:520px; height:520px; background:#5b2ea8; top:-160px; right:-120px; }
+  .g2{ width:460px; height:460px; background:#3a1f6e; bottom:-200px; left:-140px; }
+  header{ display:flex; align-items:center; justify-content:space-between; padding:20px 7vw; position:sticky; top:0; z-index:10; backdrop-filter:blur(10px); background:linear-gradient(#07070ccc,#07070c00); }
+  .brand{ display:flex; align-items:center; gap:12px; font-weight:800; letter-spacing:2px; }
+  .brand svg{ width:30px; height:30px; filter:drop-shadow(0 0 8px var(--accent)); }
+  nav a{ color:var(--dim); margin-left:26px; font-weight:600; transition:.15s; }
+  nav a:hover{ color:#fff; }
+  .wrap{ max-width:1100px; margin:0 auto; padding:0 7vw; }
+  .hero{ text-align:center; padding:12vh 7vw 8vh; }
+  .hero h1{ font-size:clamp(44px,8vw,86px); font-weight:800; letter-spacing:4px; line-height:1; }
+  .hero h1 .a{ color:var(--accent-light); text-shadow:0 0 40px var(--accent); }
+  .hero p{ color:var(--dim); font-size:clamp(16px,2.4vw,21px); margin:22px auto 0; max-width:620px; }
+  .cta{ display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin-top:38px; }
+  .btn{ display:inline-flex; align-items:center; gap:10px; padding:16px 30px; border-radius:14px; font:inherit; font-weight:700; font-size:17px; cursor:pointer; border:0; transition:transform .12s,filter .12s; }
+  .btn.primary{ background:linear-gradient(135deg,var(--accent),var(--accent-light)); color:#fff; box-shadow:0 10px 40px color-mix(in srgb,var(--accent) 55%,transparent); }
+  .btn.primary:hover{ transform:translateY(-2px); filter:brightness(1.08); }
+  .btn.ghost{ background:rgba(255,255,255,.05); border:1px solid var(--line); color:var(--txt); }
+  .btn.ghost:hover{ background:rgba(255,255,255,.1); }
+  .vtag{ color:var(--dim); font-size:13px; margin-top:14px; }
+  .chips{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:30px; }
+  .chip{ padding:7px 14px; border-radius:999px; background:rgba(255,255,255,.05); border:1px solid var(--line); color:var(--dim); font-size:13px; }
+  section{ padding:7vh 0; }
+  h2{ font-size:clamp(28px,5vw,40px); font-weight:800; text-align:center; margin-bottom:8px; }
+  .sub{ color:var(--dim); text-align:center; max-width:560px; margin:0 auto 46px; }
+  .grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:18px; }
+  .card{ background:var(--glass); border:1px solid var(--line); border-radius:18px; padding:26px; backdrop-filter:blur(14px); transition:transform .15s,border-color .15s; }
+  .card:hover{ transform:translateY(-4px); border-color:color-mix(in srgb,var(--accent) 40%,transparent); }
+  .card .ico{ width:46px; height:46px; border-radius:12px; display:grid; place-items:center; font-size:22px; background:color-mix(in srgb,var(--accent) 20%,transparent); margin-bottom:16px; }
+  .card h3{ font-size:19px; margin-bottom:8px; }
+  .card p{ color:var(--dim); font-size:15px; }
+  .shots{ display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:16px; }
+  .shots figure{ border-radius:16px; overflow:hidden; border:1px solid var(--line); background:#0d0c14; }
+  .shots img{ width:100%; display:block; }
+  .shots figcaption{ padding:12px 16px; color:var(--dim); font-size:14px; }
+  .vers{ text-align:center; }
+  .vers .pills{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:10px; }
+  .vers .pill{ padding:8px 16px; border-radius:10px; background:rgba(255,255,255,.05); border:1px solid var(--line); font-weight:600; font-size:14px; }
+  .dl{ text-align:center; background:var(--glass); border:1px solid var(--line); border-radius:22px; padding:50px 30px; margin:4vh auto; backdrop-filter:blur(14px); }
+  .steps{ display:flex; gap:20px; justify-content:center; flex-wrap:wrap; margin-top:30px; color:var(--dim); font-size:14px; }
+  .steps div{ max-width:200px; }
+  .steps b{ color:var(--accent-light); display:block; font-size:22px; }
+  footer{ text-align:center; color:var(--dim); font-size:13px; padding:40px 7vw; border-top:1px solid var(--line); }
+  footer .warn{ max-width:560px; margin:0 auto 14px; }
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="glow g1"></div><div class="glow g2"></div>
+
+<header>
+  <div class="brand">
+    <svg viewBox="-30 -30 60 60"><path fill="none" stroke="#c4b5fd" stroke-width="2.4" stroke-linejoin="round" d="M0,-26 6,-10 23,-10 10,2 16,20 0,10 -16,20 -10,2 -23,-10 -6,-10 Z"/></svg>
+    <span>NOVA CLIENT</span>
+  </div>
+  <nav>
+    <a href="#features">Funciones</a>
+    <a href="#shots">Capturas</a>
+    <a href="#download">Descargar</a>
+  </nav>
+</header>
+
+<div class="hero">
+  <h1>NOVA <span class="a">CLIENT</span></h1>
+  <p>Cliente de Minecraft con módulos, cosméticos, cielos animados y FPS Boost. Con su propio lanzador que se actualiza solo.</p>
+  <div class="cta">
+    <a class="btn primary" href="#download">⬇ Descargar para Windows</a>
+    <a class="btn ghost" href="#features">Ver funciones</a>
+  </div>
+  <div class="vtag" id="vtag">Versión más reciente</div>
+  <div class="chips">
+    <span class="chip">Cuenta de Microsoft</span>
+    <span class="chip">De la 1.21 a la 1.21.11</span>
+    <span class="chip">Mods de Modrinth</span>
+    <span class="chip">Actualizaciones automáticas</span>
+  </div>
+</div>
+
+<section id="features" class="wrap">
+  <h2>Todo en un cliente</h2>
+  <p class="sub">Funciones hechas para Nova, con su propio diseño.</p>
+  <div class="grid">
+    <div class="card"><div class="ico">⚡</div><h3>Más FPS</h3><p>FPS Boost, mods de rendimiento y modos de ahorro Medio y Extra. El lanzador ajusta todo según tu PC.</p></div>
+    <div class="card"><div class="ico">🎨</div><h3>Menú y cosméticos</h3><p>Menú de inicio animado con tu personaje, alas, halo, capa y corona pegadas a tu modelo.</p></div>
+    <div class="card"><div class="ico">🌌</div><h3>Cielos animados</h3><p>Cinco cielos (aurora, nebulosa, estrellas…) y hasta video de fondo, dibujados en tu tarjeta.</p></div>
+    <div class="card"><div class="ico">🗡️</div><h3>Extras de PvP</h3><p>Críticos, nombres al apuntar, recorrido de perlas, contador de gaps y HUD estilo Vape.</p></div>
+    <div class="card"><div class="ico">📊</div><h3>Rendimiento</h3><p>El lanzador te muestra tus FPS de cada partida, tu equipo y perfiles de gráficos listos.</p></div>
+    <div class="card"><div class="ico">🌐</div><h3>Servidores</h3><p>Mide servidores en vivo (jugadores, ping) y entra directo desde el lanzador.</p></div>
+  </div>
+</section>
+
+<section id="shots" class="wrap">
+  <h2>Así se ve</h2>
+  <p class="sub">El lanzador y el cliente dentro del juego.</p>
+  <div class="shots">
+    <figure><img src="img/menu-halloween.jpg" alt="Menú de inicio" loading="lazy"><figcaption>Menú de inicio con tu personaje</figcaption></figure>
+    <figure><img src="img/menu-cliente.jpg" alt="Menú del cliente" loading="lazy"><figcaption>Menú de módulos (Right Shift)</figcaption></figure>
+    <figure><img src="img/lanzador-rendimiento.jpg" alt="Rendimiento" loading="lazy"><figcaption>Tus FPS en el lanzador</figcaption></figure>
+    <figure><img src="img/lanzador-servidores.jpg" alt="Servidores" loading="lazy"><figcaption>Servidores con ping real</figcaption></figure>
+    <figure><img src="img/juego-cielo.jpg" alt="Cielo animado" loading="lazy"><figcaption>Cielo animado en el juego</figcaption></figure>
+    <figure><img src="img/cosmeticos.jpg" alt="Cosméticos" loading="lazy"><figcaption>Cosméticos pegados al modelo</figcaption></figure>
+  </div>
+</section>
+
+<section class="wrap vers">
+  <h2>Versiones</h2>
+  <p class="sub">Elige la versión en el lanzador. Todas con los mods de FPS configurados.</p>
+  <div class="pills">
+    <span class="pill">1.21</span><span class="pill">1.21.1</span><span class="pill">1.21.2</span><span class="pill">1.21.3</span>
+    <span class="pill">1.21.4</span><span class="pill">1.21.5</span><span class="pill">1.21.6</span><span class="pill">1.21.7</span>
+    <span class="pill">1.21.8</span><span class="pill">1.21.9</span><span class="pill">1.21.10</span><span class="pill">1.21.11</span>
+  </div>
+</section>
+
+<section id="download" class="wrap">
+  <div class="dl">
+    <h2>Descargar Nova Client</h2>
+    <p class="sub" style="margin-bottom:24px">Para Windows. Se instala y se actualiza solo cuando sale una versión nueva.</p>
+    <a class="btn primary" id="dlbtn" href="https://github.com/pepeelmago2009/nova-updates/releases/latest/download/NovaClient-Setup.exe">⬇ Descargar NovaClient-Setup.exe</a>
+    <div class="steps">
+      <div><b>1</b>Descarga e instala el .exe</div>
+      <div><b>2</b>Inicia sesión con Microsoft (o juega sin premium)</div>
+      <div><b>3</b>Elige versión y dale a Jugar</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p class="warn">Si Windows muestra "Windows protegió su PC", toca <b>Más información → Ejecutar de todas formas</b>. Es porque el instalador no tiene firma de pago.</p>
+  <p>Nova Client no está afiliado a Mojang ni a Microsoft. Minecraft es una marca de Mojang AB.</p>
+</footer>
+
+<script>
+  // fondo de estrellas que titilan
+  const c=document.getElementById('stars'),x=c.getContext('2d');let st=[];
+  function sz(){ c.width=innerWidth; c.height=innerHeight; st=[]; const n=Math.min(140,innerWidth/10|0);
+    for(let i=0;i<n;i++) st.push({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*1.3+.3,p:Math.random()*6.28,s:Math.random()*2+.5}); }
+  sz(); addEventListener('resize',sz);
+  (function loop(t){ x.clearRect(0,0,c.width,c.height);
+    for(const s of st){ const a=.3+.5*Math.abs(Math.sin(t/1000*s.s+s.p)); x.fillStyle='rgba(220,215,255,'+a+')'; x.beginPath(); x.arc(s.x,s.y,s.r,0,6.28); x.fill(); }
+    requestAnimationFrame(loop); })(0);
+  // version actual desde la API de GitHub
+  fetch('https://api.github.com/repos/pepeelmago2009/nova-updates/releases/latest')
+    .then(r=>r.json()).then(d=>{ if(d&&d.tag_name) document.getElementById('vtag').textContent='Versión más reciente: '+d.tag_name; }).catch(()=>{});
+</script>
+</body>
+</html>
