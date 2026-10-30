@@ -22,7 +22,7 @@ contextBridge.exposeInMainWorld('nova', {
   installUpdate: () => ipcRenderer.invoke('update:install'),
   window: (action) => ipcRenderer.send('window', action),
   on: (channel, fn) => {
-    const ok = ['progress', 'status', 'log', 'game-closed', 'error', 'mods-status', 'update'];
+    const ok = ['progress', 'status', 'log', 'game-closed', 'error', 'mods-status', 'update', 'update-required'];
     if (ok.includes(channel)) ipcRenderer.on(channel, (_e, data) => fn(data));
   },
 });

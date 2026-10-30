@@ -356,12 +356,13 @@ async function init() {
     box.classList.remove('hidden');
     if (u.version) box.dataset.version = u.version;
     const v = box.dataset.version || '';
-    const ready = u.state === 'ready';
-    $('update-title').textContent = ready ? t('updateReady') : t('updateDownloading');
+    const ready = u.state === 'ready' || u.state === 'installing';
+    $('update-title').textContent = u.state === 'installing' ? t('updateInstalling') : ready ? t('updateReady') : t('updateDownloading');
     $('update-sub').textContent = ready ? t('updateReadySub', [v]) : t('updateVersion', [v, u.percent || 0]);
     $('update-fill').style.width = (ready ? 100 : u.percent || 0) + '%';
     $('update-btn').classList.toggle('hidden', !ready);
   });
+  nova.on('update-required', () => { setProgress(0); toast(t('updateRequired')); }); // actualizacion obligatoria
   $('update-btn').onclick = async () => { if (!(await nova.installUpdate())) toast(t('updateLater')); };
   document.querySelector('.profile').onclick = () => { const b = document.querySelector('.nav[data-page="settings"]'); if (b) b.click(); };
   nova.on('game-closed', ({ code, nova: usedNova }) => {

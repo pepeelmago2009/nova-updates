@@ -2,7 +2,7 @@
 window.I18N = {
   es: {
     updateDownloading: 'Descargando actualización', updateVersion: 'Versión {0} · {1} %', updateReady: '¡Actualización lista!',
-    updateReadySub: 'Versión {0}. Se instala al cerrar el lanzador.', updateNow: 'Reiniciar y actualizar', updateLater: 'Cierra Minecraft primero y vuelve a intentarlo',
+    updateReadySub: 'Versión {0}. Se instala sola al cerrar Minecraft.', updateInstalling: 'Instalando la actualización...', updateRequired: 'Hay una actualización obligatoria: espera a que termine de bajar y se instale sola', updateNow: 'Reiniciar y actualizar', updateLater: 'Cierra Minecraft primero y vuelve a intentarlo',
     premium: 'Cuenta premium (Microsoft)', addMicrosoft: 'Iniciar sesión con Microsoft', offlineName: 'Nombre sin premium', use: 'Usar', inUse: 'En uso', removeAcc: 'Quitar',
     accHint: 'Con Microsoft entras a servidores premium (Hypixel, etc.) con tu skin. El lanzador nunca ve tu contraseña: se escribe en la página oficial de Microsoft.',
     logging: 'Abriendo la página de Microsoft...', accAdded: 'Cuenta agregada: {0}', accRemoved: 'Cuenta quitada', st_login: 'Iniciando sesión...',
@@ -32,7 +32,7 @@ window.I18N = {
   },
   en: {
     updateDownloading: 'Downloading update', updateVersion: 'Version {0} · {1} %', updateReady: 'Update ready!',
-    updateReadySub: 'Version {0}. It installs when you close the launcher.', updateNow: 'Restart and update', updateLater: 'Close Minecraft first and try again',
+    updateReadySub: 'Version {0}. It installs by itself when Minecraft closes.', updateInstalling: 'Installing the update...', updateRequired: 'There is a required update: wait for it to download and install by itself', updateNow: 'Restart and update', updateLater: 'Close Minecraft first and try again',
     premium: 'Premium account (Microsoft)', addMicrosoft: 'Sign in with Microsoft', offlineName: 'Offline name', use: 'Use', inUse: 'In use', removeAcc: 'Remove',
     accHint: 'With Microsoft you can join premium servers (Hypixel, etc.) with your skin. The launcher never sees your password: you type it on the official Microsoft page.',
     logging: 'Opening the Microsoft page...', accAdded: 'Account added: {0}', accRemoved: 'Account removed', st_login: 'Signing in...',
@@ -62,7 +62,7 @@ window.I18N = {
   },
   pt: {
     updateDownloading: 'Baixando atualização', updateVersion: 'Versão {0} · {1} %', updateReady: 'Atualização pronta!',
-    updateReadySub: 'Versão {0}. Ela instala quando você fechar o launcher.', updateNow: 'Reiniciar e atualizar', updateLater: 'Feche o Minecraft primeiro e tente de novo',
+    updateReadySub: 'Versão {0}. Ela instala sozinha quando o Minecraft fechar.', updateInstalling: 'Instalando a atualização...', updateRequired: 'Há uma atualização obrigatória: espere ela baixar e instalar sozinha', updateNow: 'Reiniciar e atualizar', updateLater: 'Feche o Minecraft primeiro e tente de novo',
     premium: 'Conta premium (Microsoft)', addMicrosoft: 'Entrar com a Microsoft', offlineName: 'Nome sem premium', use: 'Usar', inUse: 'Em uso', removeAcc: 'Remover',
     accHint: 'Com a Microsoft você entra em servidores premium (Hypixel, etc.) com sua skin. O launcher nunca vê sua senha: ela é digitada na página oficial da Microsoft.',
     logging: 'Abrindo a página da Microsoft...', accAdded: 'Conta adicionada: {0}', accRemoved: 'Conta removida', st_login: 'Entrando...',

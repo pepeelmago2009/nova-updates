@@ -17,7 +17,7 @@ const MAX_RAM = Math.max(1, Math.floor(os.totalmem() / 1024 ** 3) - 1);
 
 let win;
 let accountStore;
-let updates = { install: () => false };
+let updates = { install: () => false, blocking: () => false, afterGame: () => {} };
 
 /** Cuentas guardadas; los tokens se cifran con safeStorage (en Windows, protegidos por tu usuario). */
 function store() {
@@ -96,6 +96,7 @@ ipcMain.handle('settings:save', (_e, s) => settingsStore.save(SETTINGS, s, MAX_R
 
 ipcMain.handle('game:play', async (_e, mc, opts = {}) => {
   if (running) return { ok: false, error: 'already-running' };
+  if (updates && updates.blocking()) { emit('update-required', {}); return { ok: false, error: 'update-required' }; } // actualizacion obligatoria
   const settings = settingsStore.load(SETTINGS, MAX_RAM);
   if (!SUPPORTED.includes(mc)) return { ok: false, error: 'bad-version' };
   running = true;
@@ -115,6 +116,7 @@ ipcMain.handle('game:play', async (_e, mc, opts = {}) => {
   } finally {
     running = false;
     if (win && !win.isVisible()) win.show();
+    if (updates) updates.afterGame(); // si mientras jugaba bajo una actualizacion, se instala ahora
   }
 });
 
