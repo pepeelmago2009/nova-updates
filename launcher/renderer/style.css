@@ -226,3 +226,7 @@ input[type=range] { width: 100%; accent-color: var(--accent); }
 .srv-x { position: absolute; top: 8px; right: 8px; border: 0; background: transparent; color: var(--dim2); cursor: pointer; font-size: 13px; border-radius: 6px; padding: 2px 6px; opacity: 0; transition: .15s; }
 .srv:hover .srv-x { opacity: 1; } .srv-x:hover { background: rgba(229, 72, 77, .25); color: #fff; }
 .srv-hint { margin-top: 12px; }
+
+/* ---- Tus mods */
+.usermods-head { margin-bottom: 14px; }
+.usermods-head .buttons { margin-top: 10px; }

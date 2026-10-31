@@ -70,6 +70,7 @@
         <div class="seg" id="mods-tabs">
           <button data-v="browse" class="on" data-t="browse">Explorar</button>
           <button data-v="installed" data-t="installed">Instalados</button>
+          <button data-v="user" data-t="yourMods">Tus mods</button>
         </div>
       </div>
       <div id="mods-browse">
@@ -85,6 +86,16 @@
         <button id="mods-more" class="ghost hidden" data-t="loadMore">Cargar más</button>
       </div>
       <div id="mods-installed" class="hidden"></div>
+      <div id="mods-user" class="hidden">
+        <div class="usermods-head">
+          <p class="dim small" data-t="yourModsHint">Pon aquí tus propios mods (.jar). Se cargan junto con Nova en todas las versiones. Ojo: cada mod debe ser de tu versión de Minecraft y con Fabric.</p>
+          <div class="buttons">
+            <button class="mod-btn" id="um-add" data-t="umAdd">Añadir .jar</button>
+            <button class="ghost" id="um-folder" data-t="umFolder">Abrir carpeta</button>
+          </div>
+        </div>
+        <div id="um-list" class="mods-list"></div>
+      </div>
     </section>
 
     <!-- SERVIDORES -->
