@@ -230,3 +230,12 @@ input[type=range] { width: 100%; accent-color: var(--accent); }
 /* ---- Tus mods */
 .usermods-head { margin-bottom: 14px; }
 .usermods-head .buttons { margin-top: 10px; }
+
+/* Novedades */
+.news-list { display: flex; flex-direction: column; gap: 10px; }
+.news-item { padding: 12px 14px; }
+.news-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.news-ver { font-weight: 700; }
+.news-now { font-size: 11px; padding: 1px 7px; border-radius: 10px; background: var(--accent, #6b5cff); color: #fff; }
+.news-ul { margin: 0; padding-left: 18px; }
+.news-ul li { margin: 2px 0; opacity: .9; }
