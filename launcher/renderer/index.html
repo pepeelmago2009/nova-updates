@@ -71,6 +71,7 @@
           <button data-v="browse" class="on" data-t="browse">Explorar</button>
           <button data-v="installed" data-t="installed">Instalados</button>
           <button data-v="user" data-t="yourMods">Tus mods</button>
+          <button data-v="textures" data-t="yourTex">Tus texturas</button>
         </div>
       </div>
       <div id="mods-browse">
@@ -95,6 +96,16 @@
           </div>
         </div>
         <div id="um-list" class="mods-list"></div>
+      </div>
+      <div id="mods-textures" class="hidden">
+        <div class="usermods-head">
+          <p class="dim small" data-t="yourTexHint">Pon aquí tus packs de texturas (.zip). Se activan solos al jugar y se ven sus cielos (con el mod Nuit que ya trae Nova). Quita el cielo propio de Nova en el menú si quieres ver el del pack.</p>
+          <div class="buttons">
+            <button class="mod-btn" id="ut-add" data-t="utAdd">Añadir .zip</button>
+            <button class="ghost" id="ut-folder" data-t="utFolder">Abrir carpeta</button>
+          </div>
+        </div>
+        <div id="ut-list" class="mods-list"></div>
       </div>
     </section>
 
