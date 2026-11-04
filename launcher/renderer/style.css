@@ -239,3 +239,12 @@ input[type=range] { width: 100%; accent-color: var(--accent); }
 .news-now { font-size: 11px; padding: 1px 7px; border-radius: 10px; background: var(--accent, #6b5cff); color: #fff; }
 .news-ul { margin: 0; padding-left: 18px; }
 .news-ul li { margin: 2px 0; opacity: .9; }
+
+/* Música */
+.music-now { padding: 14px 16px; margin-bottom: 12px; }
+.music-title { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+.music-line { min-height: 20px; color: var(--accent, #c4b5fd); font-size: 15px; font-weight: 600; margin-bottom: 10px; }
+.music-controls { display: flex; align-items: center; gap: 8px; }
+.music-controls input[type=range] { flex: 1; }
+#mu-prev, #mu-next, #mu-play { min-width: 36px; }
+.mod-row.on { outline: 1px solid var(--accent, #6b5cff); }

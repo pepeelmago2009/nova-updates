@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://cdn.modrinth.com https://textures.minecraft.net">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://cdn.modrinth.com https://textures.minecraft.net; media-src 'self' file: blob: data:">
   <title>Nova Client</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -21,6 +21,7 @@
       <button class="nav" data-page="mods"><i>&#9638;</i><span data-t="mods">Mods</span></button>
       <button class="nav" data-page="servers"><i>&#9673;</i><span data-t="serversPage">Servidores</span></button>
       <button class="nav" data-page="perf"><i>&#9889;</i><span data-t="perfPage">Rendimiento</span></button>
+      <button class="nav" data-page="music"><i>&#9834;</i><span data-t="musicPage">Música</span></button>
       <button class="nav" data-page="news"><i>&#9733;</i><span data-t="newsPage">Novedades</span></button>
       <button class="nav" data-page="settings"><i>&#9881;</i><span data-t="settings">Ajustes</span></button>
       <button class="nav" data-page="log"><i>&#8801;</i><span data-t="log">Registro</span></button>
@@ -155,6 +156,33 @@
           <div class="dim small" data-t="ramHint">Más RAM no da más FPS: solo se la quita a Windows. Lo recomendado alcanza.</div>
         </div>
       </div>
+    </section>
+
+    <!-- MÚSICA -->
+    <section class="page" id="page-music">
+      <div class="mods-head">
+        <h2 data-t="musicPage">Música</h2>
+        <div class="buttons">
+          <button class="mod-btn" id="mu-add" data-t="muAdd">Añadir MP3</button>
+          <button class="ghost" id="mu-folder" data-t="muFolder">Abrir carpeta</button>
+        </div>
+      </div>
+      <p class="dim small" data-t="musicHint">Pon tus canciones (.mp3) y dale play. Nova baja la letra sincronizada sola y la muestra dentro de Minecraft (enciende el módulo "Letra de la música" en el HUD).</p>
+      <div class="card glass music-now" id="mu-now">
+        <div class="music-title" id="mu-title">—</div>
+        <div class="music-line" id="mu-line"></div>
+        <div class="music-controls">
+          <button id="mu-prev" class="ghost">⏮</button>
+          <button id="mu-play" class="mod-btn">▶</button>
+          <button id="mu-next" class="ghost">⏭</button>
+          <input id="mu-seek" type="range" min="0" max="100" value="0" step="0.1">
+          <span id="mu-time" class="dim small">0:00</span>
+          <span class="dim small" style="margin-left:8px">🔊</span>
+          <input id="mu-vol" type="range" min="0" max="100" value="70" style="width:80px">
+        </div>
+      </div>
+      <div id="mu-list" class="mods-list"></div>
+      <audio id="mu-audio"></audio>
     </section>
 
     <!-- NOVEDADES -->
